@@ -1,26 +1,53 @@
 import React from "react";
 import { AiOutlineDelete } from "react-icons/ai";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery,useMutation, gql } from "@apollo/client";
 // import { ALL_USERS } from "./api/Query";
 
 const ALL_USERS = gql`
-  {
-    students {
+  
+   query { students{
       _id
       name
-      email
-      age
-      phone
       rollNumber
+      email
+      phone
+      age
+    }
+    }
+`;
+
+const REMOVE_USERS = gql`
+  mutation removeStudent(
+    $_id: String!
+  ) {
+    removeStudent(
+    _id:$_id
+    ) {
+      _id
     }
   }
 `;
 function list() {
   const { data, error, loading } = useQuery(ALL_USERS);
+  const [removeStudent] = useMutation(REMOVE_USERS);
 
-  console.log("data", data);
+  const [listStudents,setListStudents]=React.useState('')
+  React.useEffect(()=>{
+    if(data && data!=="undefined"){
+      setListStudents(data.students);
+    }
+  },[data])
+  // const []
+  // const {students}=data;x
+  console.log("data",listStudents);
 
-  const deleteHandler = (id) => {};
+  const deleteHandler = (_id) => {
+    removeStudent({variables:_id})
+  console.log("remove",_id);
+
+    // removeStudent({variable:id})
+
+  };
   return (
     <div className="w-full pt-[20px] h-full">
       <h3 className="text-6xl text-sky-600 font-bold text-center pb-4 pt-[20px]">
@@ -38,29 +65,22 @@ function list() {
             </tr>
           </thead>
           <tbody className="text-center">
-            <tr>
-              <td>The Sliding Mr. Bones (Next Stop, Pottersville)</td>
-              <td>Malcolm Lockyer</td>
-              <td>1961</td>
-              <td>1961</td>
-              <td>1961</td>
-              <td>
-                <AiOutlineDelete
-                  className="hover:text-red-600 cursor-pointer"
-                  onClick={deleteHandler}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Witchy Woman</td>
-              <td>The Eagles</td>
-              <td>1972</td>
-            </tr>
-            <tr>
-              <td>Shining Star</td>
-              <td>Earth, Wind, and Fire</td>
-              <td>1975</td>
-            </tr>
+            {
+              listStudents.length>0 &&
+              listStudents.map((items)=>( <tr key={items._id}>
+                <td>{items.name}</td>
+                <td>{items.rollNumber}</td>
+                <td>{items.email}</td>
+                <td>{items.age}</td>
+                <td>{items.phone}</td>
+                <td>
+                  <AiOutlineDelete
+                    className="hover:text-red-600 cursor-pointer"
+                    onClick={()=>deleteHandler(items._id)}
+                  />
+                </td>
+              </tr>))
+            }
           </tbody>
         </table>
       </div>
