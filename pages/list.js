@@ -28,8 +28,13 @@ const REMOVE_USERS = gql`
   }
 `;
 function list() {
-  const { data, error, loading } = useQuery(ALL_USERS);
-  const [removeStudent] = useMutation(REMOVE_USERS);
+  const { data, error, loading, refetch } = useQuery(ALL_USERS);
+  const [removeStudent] = useMutation(REMOVE_USERS,{
+    refetchQueries: [
+      ALL_USERS, // DocumentNode object parsed with gql
+      'students' // Query name
+    ],
+  });
 
   const [listStudents,setListStudents]=React.useState('')
   React.useEffect(()=>{
@@ -42,7 +47,11 @@ function list() {
   console.log("data",listStudents);
 
   const deleteHandler = (_id) => {
-    removeStudent({variables:_id})
+    removeStudent({
+      variables: { _id }
+      
+    })
+    refetch()
   console.log("remove",_id);
 
     // removeStudent({variable:id})
